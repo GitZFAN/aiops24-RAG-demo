@@ -18,12 +18,12 @@ async def main():
     # 初始化 LLM 嵌入模型 和 Reranker
     llm = OpenAI(
         api_key=config["GLM_KEY"],
-        model="glm-4",
+        model="glm-4-0520",
         api_base="https://open.bigmodel.cn/api/paas/v4/",
         is_chat_model=True,
     )
     embeding = HuggingFaceEmbedding(
-        model_name="BAAI/bge-small-zh-v1.5",
+        model_name="BAAI/bge-large-zh-v1.5",
         cache_folder="./",
         embed_batch_size=128,
     )
@@ -44,13 +44,13 @@ async def main():
             collection_name=config["COLLECTION_NAME"] or "aiops24",
             optimizer_config=models.OptimizersConfigDiff(indexing_threshold=0),
         )
-        await pipeline.arun(documents=data, show_progress=True, num_workers=1)
+        await pipeline.arun(documents=data, show_progress=True, num_workers=3)
         # 恢复实时索引
         await client.update_collection(
             collection_name=config["COLLECTION_NAME"] or "aiops24",
             optimizer_config=models.OptimizersConfigDiff(indexing_threshold=20000),
         )
-        print(len(data))
+        print("len(data): ", len(data))
 
     retriever = QdrantRetriever(vector_store, embeding, similarity_top_k=3)
 
